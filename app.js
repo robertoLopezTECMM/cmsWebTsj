@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const routerEducational = require("./router/educationalOffer");
 const routerNoticias = require("./router/noticias")
+const routerMedia = require("./router/media");
 const https = require("https");
 
 //librerias para maejar archivos
@@ -53,6 +54,9 @@ http_server.use(( req, res, next ) => {
 
 http_server.use("/educational", routerEducational);
 http_server.use("/news", routerNoticias);
+http_server.use("/media", routerMedia);
+
+http_server.use(express.static('public'));
 
 /*const privateKey  = fs.readFileSync( '/etc/letsencrypt/live/xura.tsj.mx/privkey.pem', 'utf8');
 const ca = fs.readFileSync('/etc/letsencrypt/live/xura.tsj.mx/fullchain.pem', 'utf8');
