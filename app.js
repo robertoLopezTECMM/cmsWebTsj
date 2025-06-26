@@ -1,8 +1,8 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const routerEducational = require("./router/educationalOffer");
-//const routerNoticias = require("./router/noticias")
 const routerBanners = require("./router/banners");
+const routerNoticias = require("./router/noticias")
 const routerMedia = require("./router/media");
 const https = require("https");
 
@@ -20,8 +20,8 @@ http_server.use(( req, res, next ) => {
 });
 
 http_server.use("/educational", routerEducational);
-//http_server.use("/news", routerNoticias);
 http_server.use("/banners", routerBanners);
+http_server.use("/news", routerNoticias);
 http_server.use("/media", routerMedia);
 
 http_server.use(express.static('public'));
