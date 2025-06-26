@@ -73,40 +73,28 @@ const obtener_noticias = async (req, res) => {
 
 const obtener_noticias_one = async (req, res) => {
     const con = await db.getConnection();
+    const {idNew} = req.params; 
     try{
-        const [noticias] = await con.query("SELECT * FROM News");
-        let contador = 0;
-        const elementos = noticias.length;
+        const [[noticias]] = await con.query("SELECT * FROM News WHERE idNew = ?", [idNew]);
 
-        noticias.map(async noticia =>{
-            final_Json = [];
-            idNew = noticia.idNew;
+        const [newsImageExtra] = await con.query("SELECT image FROM newsImageExtra WHERE idNew = ?", [idNew]);
+        const [newsFiles] = await con.query("SELECT file FROM newsFiles WHERE idNew = ?", [idNew]);
 
-            const [newsImageExtra] = await con.query("SELECT image FROM newsImageExtra WHERE idNew = ?", idNew);
-            const [newsFiles] = await con.query("SELECT file FROM newsFiles WHERE idNew = ?", idNew);
+        const imagenes = newsImageExtra.map(item => item.image);
+        const archivos = newsFiles.map(item => item.file);
 
-            const imagenes = newsImageExtra.map(item => item.image);
-            const archivos = newsFiles.map(item => item.file);
+        const semi_json = {
+            "idNoticia": noticias.idNew,
+            "titulo": noticias.title, 
+	        "fotografiaPrincipal": noticias.mainImage,
+	        "fecha": noticias.dateNew,
+	        "descripcion": noticias.description, 
+	        "cuerpo": noticias.body,
+            "fotografiasExtra": imagenes,
+            "archivosAdjuntos": archivos
+        }
 
-            const semi_json = {
-                "idNoticia": noticia.idNew,
-                "titulo": noticia.title, 
-	            "fotografiaPrincipal": noticia.mainImage,
-	            "fecha": noticia.dateNew,
-	            "descripcion": noticia.description, 
-	            "cuerpo": noticia.body,
-                "fotografiasExtra": imagenes,
-                "archivosAdjuntos": archivos
-            }
-
-            final_Json.push(semi_json);
-            contador = contador + 1;
-
-            if(elementos === contador){
-                return res.status(200).json(final_Json); 
-            }
-        
-        });
+        return res.status(200).json(semi_json); 
     }catch(err){
         console.log(err);
         res.status(500).json({ok: false, msg: 'Algo salió mal'});
@@ -115,4 +103,54 @@ const obtener_noticias_one = async (req, res) => {
     } 
 }
 
-module.exports = {registrar_noticia, obtener_noticias}
+const actualizar_noticia = async (req, res) => {
+    const {titulo, fotografiaPrincipal, fecha, descripcion, cuerpo, fotografiasExtra, archivosAdjuntos} = req.body;
+    const {idNew} = req.params;
+    const con = await db.getConnection();
+
+    try{
+        
+        const obj = [fotografiaPrincipal, titulo, fecha, descripcion, cuerpo, idNew];
+        await con.query("UPDATE News SET mainImage = ?, title = ?, dateNew = ?, description = ?, body = ? WHERE idNew = ?", obj);
+
+        for (const urlAntigua in fotografiasExtra) {
+            const urlNueva = fotografiasExtra[urlAntigua];
+            
+            await con.query("UPDATE newsImageExtra SET image = ? WHERE image = ? AND idNew = ?", [urlNueva, urlAntigua, idNew]);
+        }
+
+        for (const archivoAntiguo in archivosAdjuntos) {
+            const archivoNuevo = archivosAdjuntos[archivoAntiguo];
+
+            await con.query("UPDATE newsFiles SET file = ? WHERE file = ? AND idNew = ?", [archivoNuevo, archivoAntiguo, idNew]);
+        }
+        
+        return res.status(200).json({ok: true, msg: "noticia actualizada con exito"});
+        
+    }catch(err){
+        console.log(err);
+        res.status(500).json({ok: false, msg: 'Algo salió mal'});
+    }finally{
+        con.release();
+    } 
+}
+
+const eliminar_noticia = async (req, res) => {
+    const {idNew} = req.params;
+    const con = await db.getConnection();
+
+    try{
+        await con.query("DELETE FROM News WHERE idNew = ?", idNew);
+        
+        return res.status(200).json({ok: true, msg: "noticia eliminada con exito"});
+    }catch(err){
+        console.log(err);
+        res.status(500).json({ok: false, msg: 'Algo salió mal'});
+    }finally{
+        con.release();
+    } 
+
+    return res.status(200).json({ok: true})
+}
+
+module.exports = {registrar_noticia, obtener_noticias, obtener_noticias_one, actualizar_noticia, eliminar_noticia}
