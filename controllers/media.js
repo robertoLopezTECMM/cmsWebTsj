@@ -2,11 +2,19 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 
-// Ruta base para guardar imágenes
+// Ruta base para guardar archivos
 const uploadDir = path.join(__dirname, process.env.IMAGE_PATH);
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
+
+// Función para obtener tipo descriptivo
+const obtenerTipoArchivo = (mimetype) => {
+  if (mimetype.startsWith('image/')) return 'Image';
+  if (mimetype.startsWith('video/')) return 'Video';
+  if (mimetype === 'application/pdf') return 'PDF';
+  return 'Archivo';
+};
 
 // Configuración de almacenamiento
 const storage = multer.diskStorage({
@@ -15,6 +23,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const tipo = req.body.tipo || 'archivo';
+    const tipoArchivo = obtenerTipoArchivo(file.mimetype);
 
     const fechaHora = new Date().toISOString()
       .replace(/[-:]/g, '')
@@ -25,21 +34,21 @@ const storage = multer.diskStorage({
     let nombreFinal;
 
     if (file.fieldname === 'principal') {
-      nombreFinal = `${tipo}PrincipalImage-${fechaHora}${extension}`;
+      nombreFinal = `${tipo}-Principal${tipoArchivo}-${fechaHora}${extension}`;
     } else {
-      // Initialize a counter for extra images if it doesn't exist
       req.extraImageCounter = (req.extraImageCounter || 0) + 1;
-      nombreFinal = `${tipo}ExtraImage-${fechaHora}-${req.extraImageCounter}${extension}`;
+      nombreFinal = `${tipo}-Extra${tipoArchivo}-${fechaHora}-${req.extraImageCounter}${extension}`;
     }
 
     cb(null, nombreFinal);
   }
 });
 
+// Configurar multer
 const upload = multer({
   storage,
   limits: {
-    files: 6 // 1 principal + hasta 5 extras
+    files: 6
   }
 });
 
@@ -48,7 +57,7 @@ const subirImagenes = (req, res) => {
   const files = req.files;
 
   if (!files || (!files['principal'] && !files['extras'])) {
-    return res.status(400).send('No se subieron imágenes');
+    return res.status(400).send('No se subieron archivos');
   }
 
   const base = process.env.IMGAE;
