@@ -13,6 +13,20 @@ const listarEducational = async (req, res) => {
     }
 }
 
+const listarEducationalOne = async (req, res) => {
+    const con = await db.getConnection();
+    const {id} = req.params;
+    try{
+        const [educa] = await con.query("SELECT id, name, type, photoLink, videoLink, flayerLink, objective, incomeProfile FROM educationalOffer WHERE id = ?", [id]);
+        res.status(200).json(educa);
+    }catch(err){
+        console.log(err);
+        res.status(500).json({ok: false, msg: 'Algo salió mal'});
+    }finally{
+        con.release();
+    }
+}
+
 const registrarEducational = async (req, res) => {
     const con = await db.getConnection()
     try{
@@ -81,6 +95,7 @@ const eliminarEducational = async (req, res) => {
 
 module.exports = {
     listarEducational,
+    listarEducationalOne,
     registrarEducational,
     actualizarEducational,
     eliminarEducational
