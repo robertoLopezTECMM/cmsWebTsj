@@ -17,7 +17,7 @@ const listarEducationalOne = async (req, res) => {
     const con = await db.getConnection();
     const {id} = req.params;
     try{
-        const [educa] = await con.query("SELECT id, name, type, photoLink, videoLink, flayerLink, objective, incomeProfile FROM educationalOffer WHERE id = ?", [id]);
+        const [[educa]] = await con.query("SELECT id, name, type, photoLink, videoLink, flayerLink, objective, incomeProfile FROM educationalOffer WHERE id = ?", [id]);
         res.status(200).json(educa);
     }catch(err){
         console.log(err);
