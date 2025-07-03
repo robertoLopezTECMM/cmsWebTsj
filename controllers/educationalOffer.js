@@ -3,7 +3,7 @@ const db = require("../config/mysql");
 const listarEducational = async (req, res) => {
     const con = await db.getConnection()
     try{
-        const [educa] = await con.query("SELECT id, name, type, photoLink, videoLink, flayerLink, objective, incomeProfile FROM educationalOffer");
+        const [educa] = await con.query("SELECT id, name, type, photoLink, videoLink, flayerLink, objective, incomeProfile, outcomeProfile FROM educationalOffer");
         res.status(200).json(educa);
     }catch(err){
         console.log(err);
@@ -17,7 +17,7 @@ const listarEducationalOne = async (req, res) => {
     const con = await db.getConnection();
     const {id} = req.params;
     try{
-        const [[educa]] = await con.query("SELECT id, name, type, photoLink, videoLink, flayerLink, objective, incomeProfile FROM educationalOffer WHERE id = ?", [id]);
+        const [[educa]] = await con.query("SELECT id, name, type, photoLink, videoLink, flayerLink, objective, incomeProfile, outcomeProfile FROM educationalOffer WHERE id = ?", [id]);
         res.status(200).json(educa);
     }catch(err){
         console.log(err);
@@ -37,10 +37,11 @@ const registrarEducational = async (req, res) => {
         videoLink, 
         flayerLink, 
         objective, 
-        incomeProfile} = req.body;
+        incomeProfile,
+        outcomeProfile} = req.body;
 
-        await con.query("INSERT INTO educationalOffer(name, type, photoLink, videoLink, flayerLink, objective, incomeProfile) VALUES(?, ?, ?, ?, ?, ?, ?)",
-            [name, type, photoLink, videoLink, flayerLink, objective, incomeProfile]
+        await con.query("INSERT INTO educationalOffer(name, type, photoLink, videoLink, flayerLink, objective, incomeProfile, outcomeProfile) VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
+            [name, type, photoLink, videoLink, flayerLink, objective, incomeProfile, outcomeProfile]
         );
 
         res.status(201).json({ok: true, msg: "elemento creado con exito"});
@@ -62,10 +63,11 @@ const actualizarEducational = async (req, res) => {
         videoLink, 
         flayerLink, 
         objective, 
-        incomeProfile} = req.body;
+        incomeProfile,
+        outcomeProfile} = req.body;
 
-        await con.query("UPDATE educationalOffer SET name = ?, type = ?, photoLink = ?, videoLink = ?, flayerLink = ?, objective = ?, incomeProfile = ? WHERE id = ?",
-            [name, type, photoLink, videoLink, flayerLink, objective, incomeProfile, id]
+        await con.query("UPDATE educationalOffer SET name = ?, type = ?, photoLink = ?, videoLink = ?, flayerLink = ?, objective = ?, incomeProfile = ?, outcomeProfile = ? WHERE id = ?",
+            [name, type, photoLink, videoLink, flayerLink, objective, incomeProfile, outcomeProfile, id]
         );
 
         res.status(200).json({ok: true, msg: "elemento actualizado con exito"});
