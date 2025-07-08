@@ -3,8 +3,12 @@ const db = require("../config/mysql");
 const listaroffas = async (req, res) => {
     const con = await db.getConnection()
     try{
-        const [unidades] = await con.query("SELECT UA.name AS unidad_academica, GROUP_CONCAT(educationalOffer.name SEPARATOR ', ') AS ofertas FROM offerUA JOIN UA ON offerUA.idUA = UA.idUA JOIN educationalOffer ON offerUA.idOffer = educationalOffer.id GROUP BY UA.idUA;");
-        res.status(200).json(unidades);
+        const [rows] = await con.query("SELECT UA.name AS unidad_academica, JSON_ARRAYAGG( JSON_OBJECT( 'id', educationalOffer.id, 'name', educationalOffer.name, 'photoLink', educationalOffer.photoLink ) ) AS ofertas FROM offerUA JOIN UA ON offerUA.idUA = UA.idUA JOIN educationalOffer ON offerUA.idOffer = educationalOffer.id GROUP BY UA.idUA, UA.name;");
+        const unidades = rows.map(row => ({
+        unidad_academica: row.unidad_academica,
+        ofertas: JSON.parse(row.ofertas)
+    }));
+    res.status(200).json(unidades);
     }catch(err){
         console.log(err);
         res.status(500).json({ok: false, msg: 'Algo salió mal'});
@@ -13,19 +17,46 @@ const listaroffas = async (req, res) => {
     }
 }
 
+
 const listarOferAcOne = async (req, res) => {
     const con = await db.getConnection();
-    const {id} = req.params;
-    try{
-        const [[campus]] = await con.query("SELECT UA.name AS unidad_academica, GROUP_CONCAT(educationalOffer.name SEPARATOR ', ') AS ofertas FROM offerUA JOIN UA ON offerUA.idUA = UA.idUA JOIN educationalOffer ON offerUA.idOffer = educationalOffer.id WHERE UA.idUA = ? GROUP BY UA.idUA;", [id]);
-        res.status(200).json(campus);
-    }catch(err){
+    const { id } = req.params;
+
+    try {
+        const [[campus]] = await con.query(`
+            SELECT 
+                UA.name AS unidad_academica,
+                JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'id', educationalOffer.id,
+                        'name', educationalOffer.name,
+                        'photoLink', educationalOffer.photoLink
+                    )
+                ) AS ofertas
+            FROM offerUA
+            JOIN UA ON offerUA.idUA = UA.idUA
+            JOIN educationalOffer ON offerUA.idOffer = educationalOffer.id
+            WHERE UA.idUA = ?
+            GROUP BY UA.idUA, UA.name;
+        `, [id]);
+
+        if (!campus) {
+            return res.status(404).json({ ok: false, msg: 'Campus no encontrado' });
+        }
+
+        const result = {
+            unidad_academica: campus.unidad_academica,
+            ofertas: JSON.parse(campus.ofertas)
+        };
+
+        res.status(200).json(result);
+    } catch (err) {
         console.log(err);
-        res.status(500).json({ok: false, msg: 'Algo salió mal'});
-    }finally{
+        res.status(500).json({ ok: false, msg: 'Algo salió mal' });
+    } finally {
         con.release();
     }
-}
+};
 
 const listarUAOferOne = async (req, res) => {
     const con = await db.getConnection();
@@ -92,5 +123,4 @@ module.exports = {
     listarUAOferOne,
     registrarOfferUA,
     eliminarOferUA
-   
 }
