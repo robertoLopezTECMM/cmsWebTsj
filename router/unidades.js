@@ -4,14 +4,14 @@ const { listarUAs,
     registrarUnidadA,
     actualizarUnidadA,
     eliminarUnidadA
- } = require('../controllers/banners');
+ } = require('../controllers/unidades');
 
-const routerNoticias = Router();
+const routerUnidades = Router();
 
-routerNoticias.post('/', registrarUnidadA);
-routerNoticias.get('/', listarUAs);
-routerNoticias.get('/:id', listarUAOne);
-routerNoticias.put('/:id', actualizarUnidadA);
-routerNoticias.delete('/:id', eliminarUnidadA);
+routerUnidades.post('/', registrarUnidadA);
+routerUnidades.get('/', listarUAs);
+routerUnidades.get('/:id', listarUAOne);
+routerUnidades.put('/:id', actualizarUnidadA);
+routerUnidades.delete('/:id', eliminarUnidadA);
 
-module.exports = routerNoticias;
+module.exports = routerUnidades;
