@@ -3,7 +3,7 @@ const db = require("../config/mysql");
 const listaroffas = async (req, res) => {
     const con = await db.getConnection()
     try{
-        const [rows] = await con.query("SELECT UA.name AS unidad_academica, JSON_ARRAYAGG( JSON_OBJECT( 'id', educationalOffer.id, 'name', educationalOffer.name, 'photoLink', educationalOffer.photoLink ) ) AS ofertas FROM offerUA JOIN UA ON offerUA.idUA = UA.idUA JOIN educationalOffer ON offerUA.idOffer = educationalOffer.id GROUP BY UA.idUA, UA.name;");
+        const [rows] = await con.query("SELECT UA.name AS unidad_academica, JSON_ARRAYAGG( JSON_OBJECT( 'id', educationalOffer.id, 'name', educationalOffer.name, 'photoLink', educationalOffer.photoLink, 'type', educationalOffer.type ) ) AS ofertas FROM offerUA JOIN UA ON offerUA.idUA = UA.idUA JOIN educationalOffer ON offerUA.idOffer = educationalOffer.id GROUP BY UA.idUA, UA.name;");
         const unidades = rows.map(row => ({
         unidad_academica: row.unidad_academica,
         ofertas: JSON.parse(row.ofertas)
