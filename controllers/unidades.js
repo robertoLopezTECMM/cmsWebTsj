@@ -3,7 +3,7 @@ const db = require("../config/mysql");
 const listarUAs = async (req, res) => {
     const con = await db.getConnection()
     try{
-        const [unidades] = await con.query("SELECT * FROM UAs");
+        const [unidades] = await con.query("SELECT * FROM UA");
         res.status(200).json(unidades);
     }catch(err){
         console.log(err);
