@@ -7,6 +7,8 @@ const routerUnidades = require("./router/unidades");
 const routerOfertas = require("./router/offua");
 const routerMedia = require("./router/media");
 const routerReticula = require("./router/reticula");
+const routerDirectorio = require("./router/directorio");
+const routerUnidad = require("./router/unidadesAcademicas")
 const https = require("https");
 
 dotenv.config();
@@ -29,6 +31,8 @@ http_server.use("/campus", routerUnidades);
 http_server.use("/media", routerMedia);
 http_server.use("/reticula", routerReticula);
 http_server.use("/ofertas", routerOfertas);
+http_server.use("/directorio", routerDirectorio);
+http_server.use("/unidadesAcademicas", routerUnidad);
 
 http_server.use(express.static('public'));
 
