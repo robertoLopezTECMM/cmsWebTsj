@@ -5,8 +5,15 @@ const listarEducational = async (req, res) => {
     try{
         const [educa] = await con.query(`SELECT ed.id, ed.name, ed.type, ed.photoLink, ed.videoLink, ed.flayerLink, ed.objective, ed.incomeProfile, ed.outcomeProfile, JSON_ARRAYAGG(JSON_OBJECT('idunidad', ua.idUA, 'unidad', ua.name)) as Campus FROM educationalOffer ed JOIN offerUA ofu on ofu.idOffer = ed.id JOIN UA ua on ua.idUA = ofu.idUA GROUP BY ed.id, ed.name, ed.type, ed.photoLink, ed.videoLink, ed.flayerLink, ed.objective, ed.incomeProfile, ed.outcomeProfile;`);
         // Transform the result to include campus information
+        
         educa.forEach(item => {
-            item.Campus = JSON.parse(item.Campus);
+            if (typeof item.Campus === 'string') {
+                try {
+                    item.Campus = JSON.parse(item.Campus);
+                } catch (err) {
+                    console.error('Error parsing Campus:', item.Campus, err);
+                }
+            }
         });
         // Return the result
         res.status(200).json(educa);
@@ -26,9 +33,17 @@ const listarEducationalOne = async (req, res) => {
         const [[educa]] = await con.query("SELECT ed.id, ed.name, ed.type, ed.photoLink, ed.videoLink, ed.flayerLink, ed.objective, ed.incomeProfile, ed.outcomeProfile, JSON_ARRAYAGG(JSON_OBJECT('idunidad', ua.idUA, 'unidad', ua.name)) as Campus FROM educationalOffer ed JOIN offerUA ofu on ofu.idOffer = ed.id JOIN UA ua on ua.idUA = ofu.idUA WHERE ed.name like (?) GROUP BY ed.id, ed.name, ed.type, ed.photoLink, ed.videoLink, ed.flayerLink, ed.objective, ed.incomeProfile, ed.outcomeProfile;", [formattedName]);
         // Transform the result to include campus information
         if (educa) {
-            educa.Campus = JSON.parse(educa.Campus);
+            if (typeof educa.Campus === 'string') {
+                try {
+                    educa.Campus = JSON.parse(educa.Campus);
+                } catch (err) {
+                    console.error('Error al parsear Campus:', educa.Campus, err);
+                    return res.status(500).json({ ok: false, msg: 'Error al procesar los datos de campus' });
+                }
+            }
+            res.status(200).json(educa);
         } else {
-            return res.status(404).json({ok: false, msg: 'Oferta educativa no encontrada'});
+            return res.status(404).json({ ok: false, msg: 'Oferta educativa no encontrada' });
         }
         // Return the result
         res.status(200).json(educa);
