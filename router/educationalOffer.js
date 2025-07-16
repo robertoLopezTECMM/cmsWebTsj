@@ -5,7 +5,7 @@ const {authenticateClient} = require("../middlewares/authenticate")
 const routerEducational = Router();
 
 routerEducational.get("/", listarEducational);
-routerEducational.get("/:id", listarEducationalOne);
+routerEducational.get("/:name", listarEducationalOne);
 routerEducational.post("/", authenticateClient, registrarEducational);
 routerEducational.put("/", authenticateClient, actualizarEducational)
 routerEducational.delete("/:id", authenticateClient, eliminarEducational);

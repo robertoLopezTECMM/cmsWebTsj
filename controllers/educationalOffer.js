@@ -3,7 +3,12 @@ const db = require("../config/mysql");
 const listarEducational = async (req, res) => {
     const con = await db.getConnection()
     try{
-        const [educa] = await con.query("SELECT id, name, type, photoLink, videoLink, flayerLink, objective, incomeProfile, outcomeProfile FROM educationalOffer");
+        const [educa] = await con.query(`SELECT ed.id, ed.name, ed.type, ed.photoLink, ed.videoLink, ed.flayerLink, ed.objective, ed.incomeProfile, ed.outcomeProfile, JSON_ARRAYAGG(JSON_OBJECT('idunidad', ua.idUA, 'unidad', ua.name)) as Campus FROM educationalOffer ed JOIN offerUA ofu on ofu.idOffer = ed.id JOIN UA ua on ua.idUA = ofu.idUA GROUP BY ed.id, ed.name, ed.type, ed.photoLink, ed.videoLink, ed.flayerLink, ed.objective, ed.incomeProfile, ed.outcomeProfile;`);
+        // Transform the result to include campus information
+        educa.forEach(item => {
+            item.Campus = JSON.parse(item.Campus);
+        });
+        // Return the result
         res.status(200).json(educa);
     }catch(err){
         console.log(err);
@@ -15,9 +20,17 @@ const listarEducational = async (req, res) => {
 
 const listarEducationalOne = async (req, res) => {
     const con = await db.getConnection();
-    const {id} = req.params;
+    const {name} = req.params;
+    const formattedName = name.replace(/-/g, ' ');
     try{
-        const [[educa]] = await con.query("SELECT id, name, type, photoLink, videoLink, flayerLink, objective, incomeProfile, outcomeProfile FROM educationalOffer WHERE id = ?", [id]);
+        const [[educa]] = await con.query("SELECT ed.id, ed.name, ed.type, ed.photoLink, ed.videoLink, ed.flayerLink, ed.objective, ed.incomeProfile, ed.outcomeProfile, JSON_ARRAYAGG(JSON_OBJECT('idunidad', ua.idUA, 'unidad', ua.name)) as Campus FROM educationalOffer ed JOIN offerUA ofu on ofu.idOffer = ed.id JOIN UA ua on ua.idUA = ofu.idUA WHERE ed.name like (?) GROUP BY ed.id, ed.name, ed.type, ed.photoLink, ed.videoLink, ed.flayerLink, ed.objective, ed.incomeProfile, ed.outcomeProfile;", [formattedName]);
+        // Transform the result to include campus information
+        if (educa) {
+            educa.Campus = JSON.parse(educa.Campus);
+        } else {
+            return res.status(404).json({ok: false, msg: 'Oferta educativa no encontrada'});
+        }
+        // Return the result
         res.status(200).json(educa);
     }catch(err){
         console.log(err);
