@@ -12,6 +12,7 @@ const routerUnidad = require("./router/unidadesAcademicas")
 const routerNormatividadArchivo = require("./router/normatividadArchivo")
 const routerNormatividadOrdenamientos = require("./router/normatividadOrdenamientos")
 const routerVideo = require("./router/video");
+const routerCredencial = require("./router/credencial");
 
 const https = require("https");
 
@@ -39,8 +40,8 @@ http_server.use("/directorio", routerDirectorio);
 http_server.use("/unidadesAcademicas", routerUnidad);
 http_server.use("/normatividadArchivo", routerNormatividadArchivo);
 http_server.use("/normatividadOrdenamientos", routerNormatividadOrdenamientos);
-http_server.use("/video", routerVideo)
-
+http_server.use("/video", routerVideo);
+http_server.use("/credencial", routerCredencial);
 
 http_server.use(express.static('public'));
 
